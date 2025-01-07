@@ -11,10 +11,17 @@ type HandlerFunc func(*Context)
 type Engine struct {
 	// 路由映射
 	router *router
+
+	// 分组控制
+	*RouterGroup
+	groups []*RouterGroup // 存储所有路由分组
 }
 
 func New() *Engine {
-	return &Engine{router: newRouter()}
+	engine := &Engine{router: newRouter()}
+	engine.RouterGroup = &RouterGroup{engine: engine}
+	engine.groups = []*RouterGroup{engine.RouterGroup}
+	return engine
 }
 
 // 添加路由规则 内部使用，非导出

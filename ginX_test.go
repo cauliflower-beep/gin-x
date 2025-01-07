@@ -7,21 +7,34 @@ import (
 
 func TestGinX(t *testing.T) {
 	r := New()
-	r.GET("/", func(c *Context) {
-		c.HTML(http.StatusOK, "<h1>Hello GinX</h1>")
+
+	r.GET("/index", func(c *Context) {
+		c.HTML(http.StatusOK, "<h1>Index Page</h1>")
 	})
 
-	r.GET("/hello", func(c *Context) {
-		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Request.URL.Path)
-	})
+	v1 := r.Group("/v1")
+	{
+		v1.GET("/", func(c *Context) {
+			c.HTML(http.StatusOK, "<h1>Hello GinX</h1>")
+		})
 
-	r.GET("/hello/:name", func(c *Context) {
-		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Param("name"), c.Request.URL.Path)
-	})
+		v1.GET("/hello", func(c *Context) {
+			c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Request.URL.Path)
+		})
+	}
+	v2 := r.Group("/v2")
+	{
+		v2.GET("/hello/:name", func(c *Context) {
+			c.String(http.StatusOK, "hello %s, you're at %s\n", c.Param("name"), c.Request.URL.Path)
+		})
+		v2.POST("/login", func(c *Context) {
+			c.JSON(http.StatusOK, H{
+				"username": c.PostForm("username"),
+				"password": c.PostForm("password"),
+			})
+		})
 
-	r.GET("/assets/*filepath", func(c *Context) {
-		c.JSON(http.StatusOK, H{"filepath": c.Param("filepath")})
-	})
+	}
 
 	_ = r.Run("0.0.0.0:9999")
 }
