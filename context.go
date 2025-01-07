@@ -9,16 +9,14 @@ import (
 // H map[string]any 的别名 完全仿照 gin 进行的简化
 type H map[string]any
 
-// Context 封装context 既可以定义方法简化部分响应重复代码；也可以包含整个请求->响应的数据集
+// Context 封装context 包含整个请求->响应的数据集 也便于定义方法简化部分响应重复代码
 type Context struct {
 	// 原始对象
 	Writer  http.ResponseWriter
 	Request *http.Request
 
 	// 请求相关
-	Path   string
-	Method string
-
+	Params map[string]string // 解析出来的路径参数
 	// 响应相关
 	StatusCode int
 }
@@ -27,9 +25,13 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
 		Writer:  w,
 		Request: req,
-		Path:    req.URL.Path,
-		Method:  req.Method,
 	}
+}
+
+// Param 访问请求路径中的参数
+func (c *Context) Param(key string) string {
+	val, _ := c.Params[key]
+	return val
 }
 
 func (c *Context) PostForm(key string) string {

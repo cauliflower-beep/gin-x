@@ -36,6 +36,7 @@ func (engine *Engine) Run(addr string) (err error) {
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// 构造上下文
+	// 每收到一个并发请求，都会新建一个上下文，不需要关心参数覆盖的问题
 	c := newContext(w, req)
 	engine.router.handle(c)
 }
