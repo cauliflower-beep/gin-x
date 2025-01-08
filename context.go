@@ -23,6 +23,8 @@ type Context struct {
 	// 中间件
 	handlers []HandlerFunc
 	index    int
+
+	engine *Engine
 }
 
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
@@ -89,9 +91,16 @@ func (c *Context) Data(code int, data []byte) {
 	_, _ = c.Writer.Write(data)
 }
 
+func (c *Context) Fail(code int, err string) {
+	c.index = len(c.handlers)
+	c.JSON(code, H{"message": err})
+}
+
 // HTML html响应的便捷构造方式
 func (c *Context) HTML(code int, html string) {
 	c.SetHeader("Content-Type", "text/html")
 	c.Status(code)
-	_, _ = c.Writer.Write([]byte(html))
+	if err := c.engine.htmlTemplates.ExecuteTemplate(c.Writer, html, nil); err != nil {
+		c.Fail(500, err.Error())
+	}
 }

@@ -18,6 +18,9 @@ func TestGinX(t *testing.T) {
 	// 全局中间件
 	r.Use(Logger())
 
+	r.LoadHTMLGlob("templates/*")
+	r.Static("/assets", "./static")
+
 	r.GET("/index", func(c *Context) {
 		c.HTML(http.StatusOK, "<h1>Index Page</h1>")
 	})

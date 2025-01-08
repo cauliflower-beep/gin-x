@@ -1,6 +1,7 @@
 package ginX
 
 import (
+	"html/template"
 	"net/http"
 	"strings"
 )
@@ -16,6 +17,10 @@ type Engine struct {
 	// 分组控制
 	*RouterGroup
 	groups []*RouterGroup // 存储所有路由分组
+
+	// 模板渲染
+	htmlTemplates *template.Template // 将所有模板加载进内存
+	funcMap       template.FuncMap   // 自定义模板渲染函数
 }
 
 func New() *Engine {
@@ -23,6 +28,14 @@ func New() *Engine {
 	engine.RouterGroup = &RouterGroup{engine: engine}
 	engine.groups = []*RouterGroup{engine.RouterGroup}
 	return engine
+}
+
+func (engine *Engine) SetFuncMap(funcMap template.FuncMap) {
+	engine.funcMap = funcMap
+}
+
+func (engine *Engine) LoadHTMLGlob(pattern string) {
+	engine.htmlTemplates = template.Must(template.New("").Funcs(engine.funcMap).ParseGlob(pattern))
 }
 
 // 添加路由规则 内部使用，非导出
@@ -54,5 +67,6 @@ func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// 每收到一个并发请求，都会新建一个上下文，不需要关心参数覆盖的问题
 	c := newContext(w, req)
 	c.handlers = middlewares
+	c.engine = engine
 	engine.router.handle(c)
 }
