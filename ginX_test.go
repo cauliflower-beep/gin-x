@@ -16,13 +16,18 @@ func print4V1() HandlerFunc {
 func TestGinX(t *testing.T) {
 	r := New()
 	// 全局中间件
-	r.Use(Logger())
+	r.Use(Logger(), Recovery())
 
 	r.LoadHTMLGlob("templates/*")
 	r.Static("/assets", "./static")
 
 	r.GET("/index", func(c *Context) {
 		c.HTML(http.StatusOK, "<h1>Index Page</h1>")
+	})
+
+	r.GET("/panic", func(c *Context) {
+		arr := []int{1, 2, 3}
+		c.String(http.StatusOK, "%#v", arr[3])
 	})
 
 	v1 := r.Group("/v1")
