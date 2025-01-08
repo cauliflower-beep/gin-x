@@ -19,12 +19,26 @@ type Context struct {
 	Params map[string]string // 解析出来的路径参数
 	// 响应相关
 	StatusCode int
+
+	// 中间件
+	handlers []HandlerFunc
+	index    int
 }
 
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
 		Writer:  w,
 		Request: req,
+
+		index: -1, // index记录执行到第几个中间件 所以要从-1开始
+	}
+}
+
+func (c *Context) Next() {
+	c.index++
+	s := len(c.handlers)
+	for ; c.index < s; c.index++ {
+		c.handlers[c.index](c)
 	}
 }
 

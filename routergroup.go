@@ -35,3 +35,8 @@ func (group *RouterGroup) GET(pattern string, handler HandlerFunc) {
 func (group *RouterGroup) POST(pattern string, handler HandlerFunc) {
 	group.addRoute("POST", pattern, handler)
 }
+
+// Use 将中间件应用到路由分组上 跟gin的做法相同
+func (group *RouterGroup) Use(middlewares ...HandlerFunc) {
+	group.middlewares = append(group.middlewares, middlewares...)
+}

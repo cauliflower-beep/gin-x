@@ -91,10 +91,14 @@ func (r *router) handle(c *Context) {
 	n, params := r.getRoute(c.Request.Method, c.Request.URL.Path)
 	if n != nil {
 		c.Params = params
-		// 调用匹配到的handler
 		key := c.Request.Method + "-" + n.pattern
-		r.handlers[key](c)
+		// 不直接调用匹配到的handler 而是加入中间件队列 等待后续依次调用
+		c.handlers = append(c.handlers, r.handlers[key])
 	} else {
-		c.String(http.StatusNotFound, "404 page not found: %s\n", c.Request.URL.Path)
+		c.handlers = append(c.handlers, func(c *Context) {
+			c.String(http.StatusNotFound, "404 page not found: %s\n", c.Request.URL.Path)
+		})
 	}
+	// 真正的开始依次执行中间件
+	c.Next()
 }

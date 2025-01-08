@@ -2,6 +2,7 @@ package ginX
 
 import (
 	"net/http"
+	"strings"
 )
 
 // 路由对应实际执行的handler
@@ -42,8 +43,16 @@ func (engine *Engine) Run(addr string) (err error) {
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var middlewares []HandlerFunc
+	for _, group := range engine.groups {
+		// 依据请求路径判断需要执行哪些分组中间件
+		if strings.HasPrefix(req.URL.Path, group.prefix) {
+			middlewares = append(middlewares, group.middlewares...)
+		}
+	}
 	// 构造上下文
 	// 每收到一个并发请求，都会新建一个上下文，不需要关心参数覆盖的问题
 	c := newContext(w, req)
+	c.handlers = middlewares
 	engine.router.handle(c)
 }

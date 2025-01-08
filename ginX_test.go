@@ -1,18 +1,29 @@
 package ginX
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
+	"time"
 )
+
+func print4V1() HandlerFunc {
+	return func(c *Context) {
+		fmt.Println("here is v1's middleware.")
+	}
+}
 
 func TestGinX(t *testing.T) {
 	r := New()
+	// 全局中间件
+	r.Use(Logger())
 
 	r.GET("/index", func(c *Context) {
 		c.HTML(http.StatusOK, "<h1>Index Page</h1>")
 	})
 
 	v1 := r.Group("/v1")
+	v1.Use(print4V1())
 	{
 		v1.GET("/", func(c *Context) {
 			c.HTML(http.StatusOK, "<h1>Hello GinX</h1>")
@@ -28,6 +39,7 @@ func TestGinX(t *testing.T) {
 			c.String(http.StatusOK, "hello %s, you're at %s\n", c.Param("name"), c.Request.URL.Path)
 		})
 		v2.POST("/login", func(c *Context) {
+			time.Sleep(time.Second)
 			c.JSON(http.StatusOK, H{
 				"username": c.PostForm("username"),
 				"password": c.PostForm("password"),
