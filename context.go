@@ -97,10 +97,10 @@ func (c *Context) Fail(code int, err string) {
 }
 
 // HTML html响应的便捷构造方式
-func (c *Context) HTML(code int, html string) {
+func (c *Context) HTML(code int, tempName string, data any) {
 	c.SetHeader("Content-Type", "text/html")
 	c.Status(code)
-	if err := c.engine.htmlTemplates.ExecuteTemplate(c.Writer, html, nil); err != nil {
+	if err := c.engine.htmlTemplates.ExecuteTemplate(c.Writer, tempName, data); err != nil {
 		c.Fail(500, err.Error())
 	}
 }

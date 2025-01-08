@@ -2,6 +2,7 @@ package ginX
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"testing"
 	"time"
@@ -14,15 +15,26 @@ func print4V1() HandlerFunc {
 }
 
 func TestGinX(t *testing.T) {
+
+	// 自定义模板渲染函数，可在模板中调用
+	FormatAsDate := func(t time.Time) string {
+		year, month, day := t.Date()
+		return fmt.Sprintf("%d-%02d-%02d", year, month, day)
+	}
+
 	r := New()
 	// 全局中间件
 	r.Use(Logger(), Recovery())
 
+	// 注册模板渲染函数
+	r.SetFuncMap(template.FuncMap{
+		"FormatAsDate": FormatAsDate,
+	})
 	r.LoadHTMLGlob("templates/*")
 	r.Static("/assets", "./static")
 
 	r.GET("/index", func(c *Context) {
-		c.HTML(http.StatusOK, "<h1>Index Page</h1>")
+		c.HTML(http.StatusOK, "<h1>Index Page</h1>", nil)
 	})
 
 	r.GET("/panic", func(c *Context) {
@@ -30,11 +42,18 @@ func TestGinX(t *testing.T) {
 		c.String(http.StatusOK, "%#v", arr[3])
 	})
 
+	r.GET("/hello", func(c *Context) {
+		c.HTML(http.StatusOK, "demo.tmpl", H{
+			"title": "gin-x",
+			"now":   time.Now(),
+		})
+	})
+
 	v1 := r.Group("/v1")
 	v1.Use(print4V1())
 	{
 		v1.GET("/", func(c *Context) {
-			c.HTML(http.StatusOK, "<h1>Hello GinX</h1>")
+			c.HTML(http.StatusOK, "<h1>Hello GinX</h1>", nil)
 		})
 
 		v1.GET("/hello", func(c *Context) {
