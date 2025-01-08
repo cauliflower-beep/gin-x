@@ -6,10 +6,10 @@ import (
 	"strings"
 )
 
-// 路由对应实际执行的handler
+// HandlerFunc 路由对应实际执行的handler
 type HandlerFunc func(*Context)
 
-// 接管路由请求的实例
+// Engine 接管路由请求的实例
 type Engine struct {
 	// 路由映射
 	router *router
@@ -19,8 +19,8 @@ type Engine struct {
 	groups []*RouterGroup // 存储所有路由分组
 
 	// 模板渲染
-	htmlTemplates *template.Template // 将所有模板加载进内存
-	funcMap       template.FuncMap   // 自定义模板渲染函数
+	htmlTemplates *template.Template
+	funcMap       template.FuncMap
 }
 
 func New() *Engine {
@@ -30,15 +30,17 @@ func New() *Engine {
 	return engine
 }
 
+// SetFuncMap 自定义处理函数 可在模板中调用
 func (engine *Engine) SetFuncMap(funcMap template.FuncMap) {
 	engine.funcMap = funcMap
 }
 
+// LoadHTMLGlob 加载模板集合
 func (engine *Engine) LoadHTMLGlob(pattern string) {
 	engine.htmlTemplates = template.Must(template.New("").Funcs(engine.funcMap).ParseGlob(pattern))
 }
 
-// 添加路由规则 内部使用，非导出
+// addRoute 添加路由规则 辅助函数，非导出
 func (engine *Engine) addRoute(method string, pattern string, handler HandlerFunc) {
 	engine.router.addRoute(method, pattern, handler)
 }

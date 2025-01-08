@@ -17,7 +17,7 @@ func (n *node) Info() string {
 	return fmt.Sprintf("node{pattern=%s, part=%s, isWild=%t}", n.pattern, n.part, n.isWild)
 }
 
-// matchChild 返回第一个成功匹配的子节点 用于插入完整路径
+// matchChild 返回第一个成功匹配的子节点
 func (n *node) matchChild(part string) *node {
 	for _, child := range n.children {
 		if child.part == part || child.isWild {
